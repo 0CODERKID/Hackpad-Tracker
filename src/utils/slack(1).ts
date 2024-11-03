@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie';
 import axios from 'axios';
 
+export const clientSecret = import.meta.env.VITE_CODE;
 export const authorizedUsers = ['Scooter Y', 'CODER KID', 'xX_ALEXREN_Xx'];
 
 export interface SlackProfile {
