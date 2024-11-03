@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie';
 
 export const authorizedUsers = ['Scooter Y', 'CODER KID', 'xX_ALEXREN_Xx'];
+export const clientSecret = import.meta.env.VITE_CODE;
 
 export interface SlackProfile {
   display_name: string;
@@ -16,7 +17,7 @@ export interface SlackAPIResponse {
 export const verifySlackUser = async (token: string, userId: string): Promise<{ isAuthorized: boolean; error?: string }> => {
   try {
     const response = await fetch(
-      `https://hackpad-tracker.vercel.app/api/slack/api/users.profile.get?user=${userId}`,
+      `https://hackpadtracker.vercel.app/api/slack/api/users.profile.get?user=${userId}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -57,7 +58,7 @@ export const handleSlackCallback = async (code: string, clientSecret: string): P
         client_id: '2210535565.7957522136834',
         client_secret: clientSecret,
         code,
-        redirect_uri: 'https://hackpad-tracker.vercel.app/callback',
+        redirect_uri: 'https://hackpadtracker.vercel.app/callback',
       }),
     });
 
