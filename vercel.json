@@ -14,5 +14,9 @@
         "dest": "/"
       }
     ],
-    "outputDirectory": "server"
+    "public": true,
+    "outputDirectory": "server",
+    "files": [
+      "db.json"
+    ]
 }
