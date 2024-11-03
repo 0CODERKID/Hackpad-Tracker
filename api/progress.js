@@ -14,10 +14,15 @@ export default async function handler(req, res) {
   // GET request - public endpoint
   if (req.method === 'GET') {
     try {
-      const prUrl = req.query.prUrl;
+      const prNumber = req.query.prUrl.split('/').pop();
       const db = await getDB();
-      const progress = db[prUrl];
-      return res.json(progress || null);
+      const progress = db[prNumber];
+      return res.json(progress || { 
+        prNumber,
+        progress: 0,
+        currentStage: 'start',
+        lastUpdated: Date.now()
+      });
     } catch (error) {
       console.error('Failed to read progress:', error);
       return res.status(500).json({ error: 'Failed to read progress' });
@@ -39,10 +44,11 @@ export default async function handler(req, res) {
 
     try {
       const { prUrl, progress, currentStage } = req.body;
+      const prNumber = prUrl.split('/').pop();
       const db = await getDB();
       
-      db[prUrl] = {
-        prUrl,
+      db[prNumber] = {
+        prNumber,
         progress,
         currentStage,
         lastUpdated: Date.now()
