@@ -1,36 +1,42 @@
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs/promises';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { put, get } from '@vercel/blob';
 import { generateToken, verifyCredentials } from './auth.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3001;
-const DB_PATH = join(__dirname, 'db.json');
+const BLOB_KEY = 'pr-progress-db';
+const activeTokens = new Set();
 
 app.use(cors());
 app.use(express.json());
 
-// Initialize database file if it doesn't exist
-async function initDB() {
+// Get database
+async function getDB() {
   try {
-    await fs.access(DB_PATH);
-  } catch {
-    await fs.writeFile(DB_PATH, JSON.stringify({}));
+    const blob = await get(BLOB_KEY);
+    if (!blob) {
+      return {};
+    }
+    const text = await blob.text();
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('Error reading from blob storage:', error);
+    return {};
   }
-}
-
-// Read database
-async function readDB() {
-  const data = await fs.readFile(DB_PATH, 'utf-8');
-  return JSON.parse(data);
 }
 
 // Write to database
 async function writeDB(data) {
-  await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2));
+  try {
+    await put(BLOB_KEY, JSON.stringify(data, null, 2), {
+      access: 'public',
+      token: import.meta.env.BLOB_READ_WRITE_TOKEN,
+    });
+  } catch (error) {
+    console.error('Error writing to blob storage:', error);
+    throw new Error('Failed to save data');
+  }
 }
 
 // Authentication middleware
@@ -67,10 +73,11 @@ app.post('/api/logout', authMiddleware, (req, res) => {
 // Get PR progress (public endpoint)
 app.get('/api/progress/:prUrl', async (req, res) => {
   try {
-    const db = await readDB();
+    const db = await getDB();
     const progress = db[req.params.prUrl];
     res.json(progress || null);
   } catch (error) {
+    console.error('Failed to read progress:', error);
     res.status(500).json({ error: 'Failed to read progress' });
   }
 });
@@ -79,7 +86,7 @@ app.get('/api/progress/:prUrl', async (req, res) => {
 app.post('/api/progress', authMiddleware, async (req, res) => {
   try {
     const { prUrl, progress, currentStage } = req.body;
-    const db = await readDB();
+    const db = await getDB();
     
     db[prUrl] = {
       prUrl,
@@ -91,11 +98,11 @@ app.post('/api/progress', authMiddleware, async (req, res) => {
     await writeDB(db);
     res.json({ success: true });
   } catch (error) {
+    console.error('Failed to save progress:', error);
     res.status(500).json({ error: 'Failed to save progress' });
   }
 });
 
-await initDB();
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

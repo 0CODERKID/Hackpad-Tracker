@@ -13,10 +13,5 @@
         "src": "/callback",
         "dest": "/"
       }
-    ],
-    "public": true,
-    "outputDirectory": "server",
-    "files": [
-      "db.json"
     ]
 }
