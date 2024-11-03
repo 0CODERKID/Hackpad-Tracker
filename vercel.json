@@ -1,0 +1,17 @@
+{
+    "version": 2,
+    "routes": [
+      {
+        "src": "/api/progress",
+        "dest": "/api/progress"
+      },
+      {
+        "src": "/api/slack/(.*)",
+        "dest": "https://slack.com/$1"
+      },
+      {
+        "src": "/callback",
+        "dest": "/"
+      }
+    ]
+  }
