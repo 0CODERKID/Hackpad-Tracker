@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 interface LoginModalProps {
   onClose: () => void;
@@ -12,12 +13,19 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, error }) => {
   const handleSlackLogin = async () => {
     setLoading(true);
     const clientId = '2210535565.7957522136834';
-    const redirectUri = 'https://hackpadtracker.vercel.app/callback';
+    const redirectUri = `${window.location.origin}/callback`;
     const scope = 'users.profile:read';
     const authUrl = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
 
     window.location.href = authUrl;
   };
+
+  // Close modal if user is already authenticated
+  React.useEffect(() => {
+    if (Cookies.get('slack_token')) {
+      onClose();
+    }
+  }, [onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">

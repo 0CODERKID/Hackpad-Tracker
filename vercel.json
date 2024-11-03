@@ -12,7 +12,7 @@
   ],
   "routes": [
     {
-      "src": "/api/progress",
+      "src": "/api/progress/(.*)",
       "dest": "/api/progress"
     },
     {

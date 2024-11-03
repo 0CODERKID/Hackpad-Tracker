@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_URL = 'https://hackpadtracker.vercel.app/api';
+import Cookies from 'js-cookie';
 
 interface PRProgress {
   prUrl: string;
@@ -11,10 +10,12 @@ interface PRProgress {
 
 export const savePRProgress = async (prUrl: string, progress: number, currentStage: string): Promise<void> => {
   try {
-    await axios.post(`${API_URL}/progress`, {
+    await axios.post('/api/progress', {
       prUrl,
       progress,
       currentStage,
+    }, {
+      withCredentials: true // This is important for sending cookies
     });
   } catch (error) {
     console.error('Failed to save progress:', error);
@@ -24,10 +25,16 @@ export const savePRProgress = async (prUrl: string, progress: number, currentSta
 
 export const getPRProgress = async (prUrl: string): Promise<PRProgress | null> => {
   try {
-    const response = await axios.get(`${API_URL}/progress/${encodeURIComponent(prUrl)}`);
+    const response = await axios.get(`/api/progress/${encodeURIComponent(prUrl)}`, {
+      withCredentials: true
+    });
     return response.data;
   } catch (error) {
     console.error('Failed to get progress:', error);
     return null;
   }
+};
+
+export const isAuthenticated = (): boolean => {
+  return !!Cookies.get('slack_token');
 };
